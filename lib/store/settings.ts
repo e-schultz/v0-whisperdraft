@@ -7,6 +7,7 @@ interface SettingsState {
   diffThreshold: number
   systemPrompt: string
   maxDiffQueue: number
+  useExperimentalEditor: boolean
   openaiApiKey: string
   aiModel: string
 
@@ -20,6 +21,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   diffThreshold: 3, // Process every 3 diffs
   systemPrompt: DEFAULT_SYSTEM_PROMPT,
   maxDiffQueue: 5,
+  useExperimentalEditor: false,
   openaiApiKey: "",
   aiModel: "gpt-4o",
 
@@ -43,8 +45,11 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       Storage.set("settings.maxDiffQueue", settings.maxDiffQueue)
     }
 
+    if (settings.useExperimentalEditor !== undefined) {
+      Storage.set("settings.useExperimentalEditor", settings.useExperimentalEditor)
+    }
+
     if (settings.openaiApiKey !== undefined) {
-      console.log("Saving API key to storage:", settings.openaiApiKey ? "Key provided" : "No key")
       Storage.set("settings.openaiApiKey", settings.openaiApiKey)
     }
 
@@ -52,10 +57,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       Storage.set("settings.aiModel", settings.aiModel)
     }
 
-    console.log("Settings updated:", {
-      ...settings,
-      openaiApiKey: settings.openaiApiKey ? "[REDACTED]" : undefined,
-    })
+    console.log("Settings updated:", settings)
   },
 
   initializeSettings: async () => {
@@ -65,16 +67,16 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       const diffThreshold = Storage.get("settings.diffThreshold") || 3
       const systemPrompt = Storage.get("settings.systemPrompt") || DEFAULT_SYSTEM_PROMPT
       const maxDiffQueue = Storage.get("settings.maxDiffQueue") || 5
+      const useExperimentalEditor = Storage.get("settings.useExperimentalEditor") || false
       const openaiApiKey = Storage.get("settings.openaiApiKey") || ""
       const aiModel = Storage.get("settings.aiModel") || "gpt-4o"
-
-      console.log("Loaded API key from storage:", openaiApiKey ? "Key exists" : "No key")
 
       set({
         autoSaveInterval,
         diffThreshold,
         systemPrompt,
         maxDiffQueue,
+        useExperimentalEditor,
         openaiApiKey,
         aiModel,
       })
@@ -84,6 +86,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         diffThreshold,
         systemPrompt,
         maxDiffQueue,
+        useExperimentalEditor,
         hasApiKey: !!openaiApiKey,
         aiModel,
       })
@@ -95,6 +98,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         diffThreshold: 3,
         systemPrompt: DEFAULT_SYSTEM_PROMPT,
         maxDiffQueue: 5,
+        useExperimentalEditor: false,
         openaiApiKey: "",
         aiModel: "gpt-4o",
       })

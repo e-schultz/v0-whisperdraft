@@ -1,5 +1,15 @@
-// Storage abstraction for local-first approach
-// Can be extended later to support Supabase or other backends
+import { ErrorLogger } from "@/lib/error/error-logger"
+
+export class StorageError extends Error {
+  constructor(
+    message: string,
+    public readonly key?: string,
+    public readonly cause?: Error,
+  ) {
+    super(message)
+    this.name = "StorageError"
+  }
+}
 
 export class Storage {
   static get(key: string): any {
@@ -19,51 +29,98 @@ export class Storage {
       console.log(`Storage.get: Successfully retrieved item for key ${key}`)
       return parsed
     } catch (error) {
-      console.error(`Error getting item ${key} from storage:`, error)
+      const storageError = new StorageError(
+        `Failed to retrieve item from storage: ${key}`,
+        key,
+        error instanceof Error ? error : undefined,
+      )
+
+      ErrorLogger.logStorageError(`Failed to retrieve item: ${key}`, "get", storageError)
+
       return null
     }
   }
 
-  static set(key: string, value: any): void {
+  static set(key: string, value: any): boolean {
     if (typeof window === "undefined") {
       console.log(`Storage.set: Window not available for key ${key}`)
-      return
+      return false
     }
 
     try {
       const serialized = JSON.stringify(value)
       localStorage.setItem(key, serialized)
       console.log(`Storage.set: Successfully stored item for key ${key}`)
+      return true
     } catch (error) {
-      console.error(`Error setting item ${key} in storage:`, error)
+      const storageError = new StorageError(
+        `Failed to store item in storage: ${key}`,
+        key,
+        error instanceof Error ? error : undefined,
+      )
+
+      ErrorLogger.logStorageError(`Failed to store item: ${key}`, "set", storageError)
 
       // If it's a quota error, try to clear some space
       if (error instanceof DOMException && error.name === "QuotaExceededError") {
         console.log("Storage quota exceeded, attempting to clear space")
         this.clearOldItems()
+
+        // Try again after clearing space
+        try {
+          const serialized = JSON.stringify(value)
+          localStorage.setItem(key, serialized)
+          console.log(`Storage.set: Successfully stored item for key ${key} after clearing space`)
+          return true
+        } catch (retryError) {
+          ErrorLogger.logStorageError(
+            `Failed to store item after clearing space: ${key}`,
+            "set-retry",
+            new StorageError(
+              `Failed to store item after clearing space: ${key}`,
+              key,
+              retryError instanceof Error ? retryError : undefined,
+            ),
+          )
+          return false
+        }
       }
+
+      return false
     }
   }
 
-  static remove(key: string): void {
-    if (typeof window === "undefined") return
+  static remove(key: string): boolean {
+    if (typeof window === "undefined") return false
 
     try {
       localStorage.removeItem(key)
       console.log(`Storage.remove: Successfully removed item for key ${key}`)
+      return true
     } catch (error) {
-      console.error(`Error removing item ${key} from storage:`, error)
+      ErrorLogger.logStorageError(
+        `Failed to remove item: ${key}`,
+        "remove",
+        new StorageError(`Failed to remove item from storage: ${key}`, key, error instanceof Error ? error : undefined),
+      )
+      return false
     }
   }
 
-  static clear(): void {
-    if (typeof window === "undefined") return
+  static clear(): boolean {
+    if (typeof window === "undefined") return false
 
     try {
       localStorage.clear()
       console.log("Storage.clear: Successfully cleared all storage")
+      return true
     } catch (error) {
-      console.error("Error clearing storage:", error)
+      ErrorLogger.logStorageError(
+        "Failed to clear storage",
+        "clear",
+        new StorageError("Failed to clear storage", undefined, error instanceof Error ? error : undefined),
+      )
+      return false
     }
   }
 
@@ -81,7 +138,11 @@ export class Storage {
         }
       }
     } catch (error) {
-      console.error("Error clearing old items:", error)
+      ErrorLogger.logStorageError(
+        "Failed to clear old items",
+        "clearOldItems",
+        new StorageError("Failed to clear old items", undefined, error instanceof Error ? error : undefined),
+      )
     }
   }
 }

@@ -3,6 +3,7 @@ import "./globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ErrorBoundary } from "@/components/common/error-boundary"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -11,7 +12,6 @@ export const metadata: Metadata = {
   description:
     "A minimalist writing environment where your thoughts evolve freely, and an AI companion responds softly from the side.",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -25,12 +25,11 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
       </head>
       <body className={inter.className}>
-        <ThemeProvider defaultTheme="system">{children}</ThemeProvider>
+        <ErrorBoundary>
+          <ThemeProvider defaultTheme="system">{children}</ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   )
 }
 
-
-
-import './globals.css'

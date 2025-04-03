@@ -2,7 +2,6 @@
 
 import { type ReactNode, useState } from "react"
 import { useDevice } from "@/lib/hooks/use-device"
-import { PanelNavigation, type PanelType } from "./panel-navigation"
 import { useSwipe } from "@/lib/hooks/use-swipe"
 
 interface PanelContainerProps {
@@ -13,6 +12,8 @@ interface PanelContainerProps {
 function SwipeIndicator({ direction }: { direction: "left" | "right" }) {
   return <div className="text-gray-500">{direction === "left" ? "<" : ">"}</div>
 }
+
+export type PanelType = "note" | "chat"
 
 export function PanelContainer({ notePanel, chatPanel }: PanelContainerProps) {
   const [activePanel, setActivePanel] = useState<PanelType>("note")
@@ -58,8 +59,6 @@ export function PanelContainer({ notePanel, chatPanel }: PanelContainerProps) {
           <SwipeIndicator direction="right" />
         </div>
       )}
-
-      <PanelNavigation activePanel={activePanel} onChange={setActivePanel} />
     </div>
   )
 }

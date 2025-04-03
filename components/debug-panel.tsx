@@ -1,11 +1,9 @@
 "use client"
-
-import { useState } from "react"
 import { useNoteStore } from "@/lib/stores/note-store"
 import { useChatStore } from "@/lib/stores/chat-store"
+import { DebugPanel as CommonDebugPanel } from "./common/debug-panel"
 
 export function DebugPanel() {
-  const [isOpen, setIsOpen] = useState(false)
   const { current, saveNote } = useNoteStore()
   const { processNewDiff, addMessage, messages } = useChatStore()
 
@@ -45,56 +43,26 @@ export function DebugPanel() {
     console.log("CHANGELOG: Updated - Added console logging throughout the application to track data flow")
   }
 
-  if (!isOpen) {
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 left-4 bg-gray-800 text-white p-2 rounded-full z-50"
-        aria-label="Open debug panel"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-          <path d="m15 9-6 6"></path>
-          <path d="m9 9 6 6"></path>
-        </svg>
-      </button>
-    )
-  }
+  const debugIcon = (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+      <path d="m15 9-6 6"></path>
+      <path d="m9 9 6 6"></path>
+    </svg>
+  )
 
   return (
-    <div className="fixed bottom-4 left-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg z-50 w-64">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-semibold text-gray-800 dark:text-gray-200">Debug Panel</h3>
-        <button
-          onClick={() => setIsOpen(false)}
-          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
+    <CommonDebugPanel title="Debug Panel" icon={debugIcon} position="left">
       <div className="space-y-2">
         <button
           onClick={handleTriggerSave}
@@ -115,7 +83,7 @@ export function DebugPanel() {
           Log State
         </button>
       </div>
-    </div>
+    </CommonDebugPanel>
   )
 }
 

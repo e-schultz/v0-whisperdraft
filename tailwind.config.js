@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
   content: [
@@ -76,8 +75,41 @@ module.exports = {
         "fluid-lg": "clamp(1.125rem, 1.2vw + 0.9rem, 1.25rem)",
         "fluid-xl": "clamp(1.25rem, 1.5vw + 1rem, 1.5rem)",
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            maxWidth: "none",
+            color: "inherit",
+            a: {
+              color: "inherit",
+              textDecoration: "underline",
+              fontWeight: "500",
+            },
+            h1: {
+              fontWeight: "700",
+              letterSpacing: "-0.025em",
+            },
+            h2: {
+              fontWeight: "600",
+              letterSpacing: "-0.025em",
+            },
+            h3: {
+              fontWeight: "600",
+              letterSpacing: "-0.025em",
+            },
+            code: {
+              fontWeight: "400",
+              color: "inherit",
+            },
+            pre: {
+              backgroundColor: "rgb(var(--foreground-rgb), 0.05)",
+              color: "inherit",
+            },
+          },
+        },
+      },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 }
 

@@ -3,19 +3,68 @@
 import { useEffect, useRef, useState } from "react"
 import { useNoteStore } from "@/lib/stores/note-store"
 import { useChatStore } from "@/lib/stores/chat-store"
-import { EditorContainer } from "./editor/editor-container"
-import { EditorHeader } from "./editor/editor-header"
-import { EditorContent } from "./editor/editor-content"
+import { useSettingsStore } from "@/lib/stores/settings-store"
+import { Panel } from "./common/panel"
+import { Editor } from "./editor/editor"
+import { ErrorBoundary } from "./common/error-boundary"
+import { useRetry } from "@/lib/hooks/use-retry"
+import { ErrorType } from "@/lib/error/error-logger"
+import { lazy } from "react"
+import { AIClient } from "@/lib/ai/ai-client"
+import { AIServiceFactory } from "@/lib/ai/ai-service-factory"
+import { SavingIndicator } from "./saving-indicator"
+
+// Lazy load the AIServiceFactory to avoid circular dependencies
+const AIServiceFactoryLoader = lazy(() =>
+  import("@/lib/ai/ai-service-factory").then((mod) => ({
+    default: () => mod.AIServiceFactory,
+  })),
+)
 
 export default function NoteEditor() {
   const { current, setContent, saveNote } = useNoteStore()
-  const { processNewDiff } = useChatStore()
+  const { processNewDiff, error: chatError, setError } = useChatStore()
+  const { updateSettings } = useSettingsStore()
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null)
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [errorType, setErrorType] = useState<ErrorType>(ErrorType.UNKNOWN)
+  // Update the state to track API key status
+  const [apiKeyStatus, setApiKeyStatus] = useState<"missing" | "validating" | "valid" | "invalid">("missing")
+  const [hasEnvApiKey, setHasEnvApiKey] = useState<boolean>(false)
+
+  // Update the useEffect that checks for API key to also validate it
+  useEffect(() => {
+    const validateApiKey = async () => {
+      try {
+        // Check if we have an environment API key
+        const envKeyAvailable = await AIServiceFactory.hasEnvironmentApiKey()
+        setHasEnvApiKey(envKeyAvailable)
+
+        const hasKey = await AIServiceFactory.hasApiKey()
+
+        if (!hasKey) {
+          setApiKeyStatus("missing")
+          return
+        }
+
+        // If we have a key, validate it
+        setApiKeyStatus("validating")
+        const isValid = await AIClient.isAvailable()
+        setApiKeyStatus(isValid ? "valid" : "invalid")
+      } catch (error) {
+        console.error("Error validating API key:", error)
+        setApiKeyStatus("invalid")
+      }
+    }
+
+    validateApiKey()
+  }, [useSettingsStore.getState().openaiApiKey]) // Re-run when API key changes
 
   // Set up auto-save timer
   useEffect(() => {
-    console.log("Setting up auto-save timer")
+    console.log("Note Editor: Setting up auto-save timer")
 
     // Clear any existing timer
     if (autoSaveTimerRef.current) {
@@ -24,69 +73,165 @@ export default function NoteEditor() {
 
     // Set up new timer
     autoSaveTimerRef.current = setInterval(async () => {
-      console.log("Auto-save timer triggered")
+      console.log("Note Editor: Auto-save timer triggered")
+
+      // Skip if already saving
+      if (isSaving) {
+        console.log("Note Editor: Already saving, skipping auto-save")
+        return
+      }
+
       try {
+        setIsSaving(true)
         const diff = await saveNote()
-        console.log("Auto-save result:", diff)
+        console.log("Note Editor: Auto-save result:", diff ? "Changes detected" : "No changes")
 
         if (diff) {
-          console.log("Processing diff from auto-save")
+          console.log("Note Editor: Processing diff from auto-save")
           await processNewDiff(diff, current)
           setLastSaveTime(new Date())
-
-          // Log to console that this would update the changelog
-          console.log("CHANGELOG: Updated - Fixed auto-save functionality to properly trigger diff generation")
-        } else {
-          console.log("No diff generated from auto-save")
+          setSaveError(null)
         }
       } catch (error) {
-        console.error("Error during auto-save:", error)
+        console.error("Note Editor: Error during auto-save:", error)
+        setSaveError(error instanceof Error ? error.message : "Failed to auto-save")
+        setErrorType(ErrorType.STORAGE)
+      } finally {
+        setIsSaving(false)
       }
     }, 30000) // 30 seconds
 
     return () => {
-      console.log("Cleaning up auto-save timer")
+      console.log("Note Editor: Cleaning up auto-save timer")
       if (autoSaveTimerRef.current) {
         clearInterval(autoSaveTimerRef.current)
       }
     }
-  }, [saveNote, processNewDiff, current])
+  }, [saveNote, processNewDiff, current, isSaving])
 
-  const handleChange = (content: string) => {
+  const handleContentChange = (content: string) => {
     setContent(content)
   }
 
-  const handleManualSave = async () => {
-    console.log("Manual save triggered")
-    try {
+  // Use the retry hook for manual save
+  const [executeSave, saveState, resetSaveState] = useRetry(
+    async () => {
       const diff = await saveNote()
-      console.log("Manual save result:", diff)
 
       if (diff) {
-        console.log("Processing diff from manual save")
         await processNewDiff(diff, current)
         setLastSaveTime(new Date())
-
-        // Log to console that this would update the changelog
-        console.log("CHANGELOG: Updated - Fixed manual save functionality to properly trigger diff generation")
-      } else {
-        console.log("No diff generated from manual save")
       }
-    } catch (error) {
-      console.error("Error during manual save:", error)
+
+      return diff
+    },
+    {
+      maxRetries: 2,
+      initialDelay: 1000,
+      errorType: ErrorType.STORAGE,
+      component: "NoteEditor",
+      action: "manualSave",
+    },
+  )
+
+  const handleManualSave = async () => {
+    console.log("Note Editor: Manual save triggered")
+
+    // Skip if already saving
+    if (isSaving) {
+      console.log("Note Editor: Already saving, skipping manual save")
+      return
+    }
+
+    setSaveError(null)
+    setError(null)
+    setIsSaving(true)
+
+    try {
+      await executeSave()
+
+      if (saveState.error) {
+        setSaveError("Failed to save note after multiple attempts")
+        setErrorType(ErrorType.STORAGE)
+      }
+    } finally {
+      setIsSaving(false)
     }
   }
 
+  // Create header actions
+  const headerActions = (
+    <button
+      onClick={handleManualSave}
+      className="px-4 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700 
+                dark:text-gray-200 rounded-md transition-colors shadow-sm"
+      aria-label="Save note"
+      disabled={isSaving}
+    >
+      {isSaving ? "Saving..." : "Save"}
+    </button>
+  )
+
+  // Handle retry for save errors
+  const handleRetrySave = () => {
+    resetSaveState()
+    setSaveError(null)
+    handleManualSave()
+  }
+
+  // Handle dismissing errors
+  const handleDismissError = () => {
+    setSaveError(null)
+    setError(null)
+  }
+
+  // Determine if we should show API key notifications
+  const showApiKeyMissing = apiKeyStatus === "missing" && !hasEnvApiKey
+  const showEnvKeyMessage = apiKeyStatus === "missing" && hasEnvApiKey
+  const showValidatingKey = apiKeyStatus === "validating"
+  const showInvalidKey = apiKeyStatus === "invalid"
+
   return (
-    <EditorContainer>
-      <EditorHeader onSave={handleManualSave} />
-      <EditorContent content={current} onChange={handleChange} />
-      {lastSaveTime && (
-        <div className="text-xs text-gray-500 dark:text-gray-400 p-2 text-right">
-          Last saved: {lastSaveTime.toLocaleTimeString()}
+    <ErrorBoundary
+      fallback={
+        <div className="p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md m-4">
+          <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2">Editor Error</h3>
+          <p className="text-sm text-red-700 dark:text-red-400">
+            There was a problem loading the editor. Try refreshing the page.
+          </p>
         </div>
-      )}
-    </EditorContainer>
+      }
+    >
+      <Panel title="Note" headerActions={headerActions}>
+        <ErrorBoundary
+          fallback={
+            <div className="p-4 m-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+              <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2">Editor Content Error</h3>
+              <p className="text-sm text-red-700 dark:text-red-400">
+                There was a problem with the editor content. You can try switching editor modes or refreshing the page.
+              </p>
+              <div className="mt-3 flex space-x-2"></div>
+            </div>
+          }
+        >
+          <Editor
+            content={current}
+            onChange={handleContentChange}
+            placeholder="Start writing here..."
+            className="flex-1"
+          />
+        </ErrorBoundary>
+
+        {lastSaveTime && (
+          <div className="text-xs text-gray-500 dark:text-gray-400 p-3 text-right border-t border-gray-200 dark:border-gray-700/50 bg-gray-50 dark:bg-gray-800/30">
+            Last saved: {lastSaveTime.toLocaleTimeString()}
+          </div>
+        )}
+      </Panel>
+
+      {/* Saving indicator positioned absolutely to prevent layout shift */}
+      <SavingIndicator />
+    </ErrorBoundary>
   )
 }
 
