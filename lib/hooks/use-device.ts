@@ -9,15 +9,21 @@ interface DeviceInfo {
   width: number
 }
 
+// Default values for server-side rendering
+const defaultDeviceInfo: DeviceInfo = {
+  isMobile: false,
+  isTablet: false,
+  isDesktop: true,
+  width: 1200,
+}
+
 export function useDevice(): DeviceInfo {
-  const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>({
-    isMobile: false,
-    isTablet: false,
-    isDesktop: true,
-    width: typeof window !== "undefined" ? window.innerWidth : 1200,
-  })
+  const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>(defaultDeviceInfo)
+  const [hasMounted, setHasMounted] = useState(false)
 
   useEffect(() => {
+    setHasMounted(true)
+
     const handleResize = () => {
       const width = window.innerWidth
       setDeviceInfo({
@@ -37,6 +43,11 @@ export function useDevice(): DeviceInfo {
     // Clean up
     return () => window.removeEventListener("resize", handleResize)
   }, [])
+
+  // Return default values during SSR
+  if (!hasMounted) {
+    return defaultDeviceInfo
+  }
 
   return deviceInfo
 }

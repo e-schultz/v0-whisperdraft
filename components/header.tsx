@@ -53,25 +53,25 @@ export default function Header() {
   }
 
   return (
-    <header className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+    <header className="flex items-center justify-between py-2 px-3 border-b border-gray-200 dark:border-gray-700/50 bg-white dark:bg-gray-800/40 backdrop-blur-sm sticky top-0 z-20">
       <div className="flex items-center">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Whisperdraft</h1>
-        <p className="ml-4 text-gray-500 dark:text-gray-400 italic hidden sm:block">
+        <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">Whisperdraft</h1>
+        <p className="ml-3 text-sm text-gray-500 dark:text-gray-400 italic hidden sm:block">
           A shack for thought, with a ghost in the walls
         </p>
       </div>
 
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-1">
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
         >
           {theme === "dark" ? (
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -93,8 +93,8 @@ export default function Header() {
           ) : (
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -110,13 +110,13 @@ export default function Header() {
 
         <button
           onClick={() => setIsSettingsOpen(true)}
-          className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           aria-label="Open settings"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
+            width="18"
+            height="18"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -132,12 +132,13 @@ export default function Header() {
 
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          aria-label="Open menu"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            width="18"
+            height="18"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -156,17 +157,17 @@ export default function Header() {
       {isSettingsOpen && <SettingsPanel onClose={() => setIsSettingsOpen(false)} />}
 
       {isMenuOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-10">
+        <div className="absolute right-3 top-10 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-30 overflow-hidden">
           <div className="py-1">
             <button
               onClick={handleSave}
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="block w-full text-left px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               Save Note
             </button>
             <button
               onClick={handleExport}
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="block w-full text-left px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               Export Note & Chat
             </button>

@@ -3,22 +3,32 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-rgb: 255, 255, 255;
+  --foreground-rgb: 51, 51, 51;
+  --background-rgb: 250, 250, 250;
+}
+
+.dark {
+  --foreground-rgb: 229, 231, 235;
+  --background-rgb: 17, 24, 39;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
+  font-feature-settings: "kern";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -26,8 +36,36 @@ body {
   border-radius: 4px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #a1a1a1;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Add a utility class for the darker background in panels */
+.bg-panel-dark {
+  background-color: #1a1f2b;
+}
+
+/* Remove any conflicting CSS transitions for panel animations */
+/* Find and remove or comment out these lines if they exist: */
+
+/* Remove or comment out any transition properties for panel animations */
+/* For example:
+.panel-transition {
+  transition: width 0.3s ease-in-out, opacity 0.2s ease-in-out;
+}
+*/
+
+/* Add this to ensure Framer Motion animations take precedence */
+.motion-panel {
+  transition: none !important;
 }
 
 /* TipTap Editor Styles */
@@ -40,29 +78,133 @@ body {
 .tiptap-editor-container .ProseMirror {
   min-height: 100%;
   outline: none;
+  line-height: 1.5;
+  padding: 0.75rem;
 }
 
 .tiptap-editor-container .ProseMirror p.is-editor-empty:first-child::before {
-  color: #adb5bd;
+  color: #9ca3af;
   content: attr(data-placeholder);
   float: left;
   height: 0;
   pointer-events: none;
 }
 
-.tiptap-toolbar button {
-  color: #4b5563;
+.tiptap-editor-container .ProseMirror h1 {
+  font-size: 1.5rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
 }
 
-.dark .tiptap-toolbar button {
-  color: #d1d5db;
+.tiptap-editor-container .ProseMirror h2 {
+  font-size: 1.25rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
 }
 
-.tiptap-toolbar button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+.tiptap-editor-container .ProseMirror p {
+  margin-bottom: 0.5rem;
 }
 
-.dark .tiptap-toolbar button:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+.tiptap-editor-container .ProseMirror ul,
+.tiptap-editor-container .ProseMirror ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.tiptap-editor-container .ProseMirror li {
+  margin-bottom: 0.25rem;
+}
+
+.tiptap-editor-container .ProseMirror a {
+  color: #d97706;
+  text-decoration: underline;
+}
+
+.dark .tiptap-editor-container .ProseMirror a {
+  color: #fbbf24;
+}
+
+/* Add this utility class for word breaking */
+.break-words {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Add custom styles for the resize handle */
+.resize-handle-hover {
+  position: absolute;
+  height: 100%;
+  width: 12px;
+  cursor: col-resize;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resize-handle-hover:hover::before {
+  content: "";
+  position: absolute;
+  height: 40px;
+  width: 4px;
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.dark .resize-handle-hover:hover::before {
+  background-color: rgba(209, 213, 219, 0.5);
+}
+
+/* Add these styles at the end of the file to enhance the resize handle */
+
+/* Enhanced resize handle styles */
+.resize-handle {
+  position: relative;
+  height: 100%;
+  cursor: col-resize;
+}
+
+.resize-handle::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px; /* Wide hit area */
+  background-color: transparent;
+}
+
+.resize-handle:hover::before {
+  background-color: rgba(200, 200, 200, 0.1);
+}
+
+.resize-handle::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  background-color: rgba(156, 163, 175, 0.5);
+}
+
+.dark .resize-handle::after {
+  background-color: rgba(75, 85, 99, 0.5);
+}
+
+.resize-handle:hover::after {
+  width: 2px;
+  background-color: rgba(156, 163, 175, 0.8);
+}
+
+.dark .resize-handle:hover::after {
+  background-color: rgba(156, 163, 175, 0.8);
 }
 

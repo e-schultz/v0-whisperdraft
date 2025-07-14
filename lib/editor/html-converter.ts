@@ -10,23 +10,29 @@ const turndownService = new TurndownService({
 
 // Convert Markdown to HTML
 export function markdownToHtml(markdown: string): string {
-  if (!markdown) return ""
+  if (!markdown || markdown.trim() === "") return "<p></p>" // Return empty paragraph for empty content
+
   try {
-    return marked.parse(markdown)
+    // Normalize line endings to prevent inconsistencies
+    const normalizedMarkdown = markdown.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
+    return marked.parse(normalizedMarkdown)
   } catch (error) {
     console.error("Error converting markdown to HTML:", error)
-    return markdown // Return original content on error
+    return "<p></p>" // Return empty paragraph on error
   }
 }
 
 // Convert HTML to Markdown
 export function htmlToMarkdown(html: string): string {
-  if (!html) return ""
+  if (!html || html === "<p></p>" || html === "<p></p>\n" || html.trim() === "") return "" // Return empty string for empty paragraph
+
   try {
-    return turndownService.turndown(html)
+    // Normalize the HTML to prevent inconsistencies
+    const normalizedHtml = html.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
+    return turndownService.turndown(normalizedHtml)
   } catch (error) {
     console.error("Error converting HTML to markdown:", error)
-    return html // Return original content on error
+    return "" // Return empty string on error to avoid breaking the editor
   }
 }
 

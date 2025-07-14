@@ -18,12 +18,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - WHISPERDRAFT-008 MINOR Added loading state to ensure app only renders after initialization
 - WHISPERDRAFT-009 MINOR Added last save timestamp indicator to editor
 - WHISPERDRAFT-010 MINOR Added storage quota handling to manage localStorage limits
+- WHISPERDRAFT-028 MINOR Added Framer Motion animations for improved UI interactions
+- WHISPERDRAFT-029 MINOR Added spring animations for panel transitions
+- WHISPERDRAFT-030 MINOR Added animated tooltips with improved visibility
 
 ### Changed
 - WHISPERDRAFT-011 PATCH Enhanced store initialization with async functions and better error handling
 - WHISPERDRAFT-012 PATCH Improved storage utility with better error handling and operation logging
 - WHISPERDRAFT-013 PATCH Enhanced auto-save timer with improved error handling and logging
 - WHISPERDRAFT-014 PATCH Improved LLM service with better error handling and response logging
+- WHISPERDRAFT-031 PATCH Enhanced mobile experience with animated swipe indicators
+- WHISPERDRAFT-032 PATCH Improved desktop panel resizing with smoother animations
+- WHISPERDRAFT-033 PATCH Condensed UI elements while maintaining animation quality
 
 ### Fixed
 - WHISPERDRAFT-015 MAJOR Fixed chat message rendering to ensure messages are properly displayed
@@ -31,6 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - WHISPERDRAFT-017 MAJOR Fixed auto-save functionality to properly trigger diff generation
 - WHISPERDRAFT-018 MAJOR Fixed mobile experience to ensure chat panel is properly displayed
 - WHISPERDRAFT-019 MAJOR Fixed initialization sequence to ensure proper data loading
+- WHISPERDRAFT-034 MAJOR Fixed keyboard shortcuts functionality, particularly Ctrl+\ for toggling panels
+- WHISPERDRAFT-035 MAJOR Fixed animation conflicts between CSS transitions and Framer Motion
+- WHISPERDRAFT-036 MAJOR Fixed panel transition issues when resizing
+- WHISPERDRAFT-037 MAJOR Fixed mobile swipe gesture detection and animation
 
 ## [0.1.0] - 2023-03-15
 
