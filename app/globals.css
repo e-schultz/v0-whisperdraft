@@ -3,32 +3,22 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 51, 51, 51;
-  --background-rgb: 250, 250, 250;
-}
-
-.dark {
-  --foreground-rgb: 229, 231, 235;
-  --background-rgb: 17, 24, 39;
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 255, 255, 255;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
-  font-feature-settings: "kern";
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
-  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f1f1f1;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -36,16 +26,8 @@ body {
   border-radius: 4px;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: #4b5563;
-}
-
 ::-webkit-scrollbar-thumb:hover {
   background: #a1a1a1;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
 }
 
 /* TipTap Editor Styles */
@@ -58,51 +40,29 @@ body {
 .tiptap-editor-container .ProseMirror {
   min-height: 100%;
   outline: none;
-  line-height: 1.6;
 }
 
 .tiptap-editor-container .ProseMirror p.is-editor-empty:first-child::before {
-  color: #9ca3af;
+  color: #adb5bd;
   content: attr(data-placeholder);
   float: left;
   height: 0;
   pointer-events: none;
 }
 
-.tiptap-editor-container .ProseMirror h1 {
-  font-size: 1.75rem;
-  margin-top: 1.5rem;
-  margin-bottom: 1rem;
-  font-weight: 600;
+.tiptap-toolbar button {
+  color: #4b5563;
 }
 
-.tiptap-editor-container .ProseMirror h2 {
-  font-size: 1.5rem;
-  margin-top: 1.25rem;
-  margin-bottom: 0.75rem;
-  font-weight: 600;
+.dark .tiptap-toolbar button {
+  color: #d1d5db;
 }
 
-.tiptap-editor-container .ProseMirror p {
-  margin-bottom: 0.75rem;
+.tiptap-toolbar button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
-.tiptap-editor-container .ProseMirror ul,
-.tiptap-editor-container .ProseMirror ol {
-  padding-left: 1.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.tiptap-editor-container .ProseMirror li {
-  margin-bottom: 0.25rem;
-}
-
-.tiptap-editor-container .ProseMirror a {
-  color: #d97706;
-  text-decoration: underline;
-}
-
-.dark .tiptap-editor-container .ProseMirror a {
-  color: #fbbf24;
+.dark .tiptap-toolbar button:hover {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 

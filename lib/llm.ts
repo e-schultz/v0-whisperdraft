@@ -1,39 +1,82 @@
+import { useSettingsStore } from "@/lib/stores/settings-store"
+import { DEFAULT_SYSTEM_PROMPT } from "@/lib/constants"
+
+// Call the LLM with a prompt
 export async function callLLM(prompt: string): Promise<string> {
-  console.log("LLM service called with prompt:", prompt.substring(0, 100) + "...")
-
   try {
-    // In a real implementation, this would call an actual LLM API
-    // For now, we'll simulate a response
+    console.log("Calling LLM with prompt:", prompt.substring(0, 100) + "...")
 
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    // Get the system prompt from settings with fallback
+    const systemPrompt = useSettingsStore.getState().systemPrompt || DEFAULT_SYSTEM_PROMPT
+    console.log("Using system prompt:", systemPrompt.substring(0, 100) + "...")
 
-    // For demo purposes, generate a simple response
-    // In production, this would call OpenAI or another LLM provider
-    const response = simulateResponse(prompt)
-    console.log("LLM response generated:", response.substring(0, 50) + "...")
-    return response
-  } catch (error) {
+    // Check if we're in the browser
+    const isBrowser = typeof window !== "undefined"
+
+    if (isBrowser) {
+      // In browser context, use the API endpoint instead of direct calls
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt,
+          systemPrompt,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `API request failed with status ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data.text
+    } else {
+      // Server-side context (should not happen in this implementation)
+      throw new Error("Server-side LLM calls not implemented in this function")
+    }
+  } catch (error: any) {
     console.error("Error calling LLM:", error)
-    return "I encountered an error while processing your writing. Please continue, and I'll try to respond to your next changes."
+    return "I noticed your changes, but I'm having trouble formulating a response right now. Please continue writing."
   }
 }
 
-// Temporary function to simulate LLM responses
-function simulateResponse(prompt: string): string {
-  const responses = [
-    "I notice you're developing your thoughts here. The structure is coming along nicely.",
-    "That's an interesting point you just added. Have you considered exploring it further?",
-    "Your writing has a good rhythm to it. I like how you're connecting these ideas.",
-    "This reminds me of something you mentioned earlier. There might be a connection worth exploring.",
-    "I see you're refining your argument. The clarity is improving with each edit.",
-    "That's a compelling addition. It strengthens your overall narrative.",
-    "I'm noticing a theme emerging in your recent edits. It seems important to your thinking.",
-    "The way you've phrased that last part is quite elegant. It flows naturally from what came before.",
-    "You've added some nuance here that wasn't present before. It adds depth to your perspective.",
-    "This is developing in an interesting direction. I'm curious to see where you take it next.",
-  ]
+// Generate a summary of the note
+export async function generateSummary(content: string): Promise<string> {
+  if (!content.trim()) return ""
 
-  return responses[Math.floor(Math.random() * responses.length)]
+  try {
+    // Check if we're in the browser
+    const isBrowser = typeof window !== "undefined"
+
+    if (isBrowser) {
+      // In browser context, use the API endpoint
+      const response = await fetch("/api/summary", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `API request failed with status ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data.text
+    } else {
+      // Server-side context (should not happen in this implementation)
+      throw new Error("Server-side summary generation not implemented in this function")
+    }
+  } catch (error: any) {
+    console.error("Error generating summary:", error)
+    return "Unable to generate summary"
+  }
 }
 
